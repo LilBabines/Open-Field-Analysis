@@ -4,7 +4,9 @@ import numpy as np
 
 
 def get_path():
-    path=os.path.join(os.getcwd(),"configCopi.xlsx")
+    '''renvoie la config
+    emplacement  : ./config.xlsx'''
+    path=os.path.join(os.getcwd(),"config.xlsx")
     print(path)
     assert os.path.exists(path)
     #print(os.path.exists(path))
@@ -49,7 +51,9 @@ def audios(row,dir_data):
 def get_anomalie(row):
     #print(row['exp'],row['rat'])
     return row['anomalies'].split(',')
+
 def get_time(row):
+    
     if row['end_frame']:
         return (row['end_frame'])*60
     else :
