@@ -132,6 +132,7 @@ def get_fps(source):
     return sampling_frequency
 
 def load_audio(source):
+    '''récupère l'audio depuis un fichier audio (mp3)'''
     ad=(mpy.AudioFileClip(source)).to_soundarray()[0:40000000,0]
     
 
@@ -139,7 +140,7 @@ def load_audio(source):
     
     return  ad
 def get_audio(source):
-    
+    '''récupère l'audio depuis un fichier video (mp4)'''
     ad=  mpy.VideoFileClip(source).audio.to_soundarray()[0:40000000,0]
     
     return  ad

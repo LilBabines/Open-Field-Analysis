@@ -17,67 +17,86 @@ from homography import homography
 sys.path.insert(1,"utils")
 import read_exel
 
-
+#fichier config (nom des video anomalis, durée, etc.)
 df_config=read_exel.get_df()
+
+#emplacement des donées
 DATA_PATH=os.path.join(os.getcwd(),'data')
+
+#dossier courant
 PATH=os.getcwd()
+
+#Calcule la trajectoire tout les FRAME_RATE frames
 FRAME_RATE=5
+
+#début d'analyse des video (frame de la camera 1)
 FRAME_START=5000
+
+#vérifie si tout les video du fichier config sont trouvées
 read_exel.verif_video(df_config)
 
+#chargement du model, YOLO
 yolo_weights_path=os.path.join(os.getcwd(),'model','poids','bestPose_Yv7.pt')#,','Utilisateur''auguste.verdier','Desktop','Rat_Tracker','model','yolov5'
 yolo_repo=os.path.join(os.getcwd(),'model','yoloEncore','YOLOv7')
 
 yolov7_Pose = segmentation_yolo.load_model(yolo_repo,yolo_weights_path)
 
-
+#pour toutes les ligne du fichier config
 for index,row in df_config.iterrows():
+
+    #début du chrono
     start = t.time()
     print("Début")
 
     
-
+    #on récupère le nom des video (sources), l'expérieince (exp), et le rat (rat)
     sources,exp,rat,title=read_exel.get_info(row,DATA_PATH)
 
+    #dossier où l'on range les trajectoires
     SAVE_PATH=os.path.join('E:','Stage_Tremplin','TRAJECTORy','resultat',rat,exp)
+
+    #création d'un dossier coordinates{i}, pour i tout les calcul d'une même expérience (ou si deux prélésion d'un même rat par exmeple)
     SAVE_DIR=os.path.join(SAVE_PATH,'coordinates'+str(len(os.listdir(SAVE_PATH))))
     os.makedirs(SAVE_DIR)
+
+    #on instancie le dataframe de sorti
     data_frame=pd.DataFrame(columns=('x','y','label','num','cam_confidence','mask_score','score1','score2','score3','score4'))
 
-    H1=homography.get(os.path.join(DATA_PATH,rat,exp,'homographhy','homo1.npy'))
-    H2=homography.get(os.path.join(DATA_PATH,rat,exp,'homographhy','homo2.npy'))
-    H3=homography.get(os.path.join(DATA_PATH,rat,exp,'homographhy','homo3.npy'))
-    H4=homography.get(os.path.join(DATA_PATH,rat,exp,'homographhy','homo4.npy'))
+    # on charge homographie
+    H1=homography.get(rat,exp,sources[0],DATA_PATH,0)
+    H2=homography.get(rat,exp,sources[1],DATA_PATH,1)
+    H3=homography.get(rat,exp,sources[2],DATA_PATH,2)
+    H4=homography.get(rat,exp,sources[3],DATA_PATH,3)
 
-    time=read_exel.get_time(row)
-    print(sources)
+    #recupère le temps de fin de l'open field (juste avant arrivé de la vitre)
+    #time=read_exel.get_time(row)
 
+
+    #récupère où récuprer les path audio (sur les video MP4 si tout va bien, sinon sur un fichier MP3 dans le même répertoire que la video sans audio [arrive quand video rétournée])
     audios=read_exel.audios(row,DATA_PATH)
 
-
+    #récupère les anomalie (zoom , lux, son)
     anomalis=read_exel.get_anomalie(row)
 
     print(rat,exp)
 
-     #print(audios)
+    #on récupère le fps du son
     audio_fps=synchronize.get_fps(sources[3])
-    #print(audio_fps)
-    for i,ano in enumerate(anomalis):
-        #print(i)
-        if ano=='son':
-            #print(audios[i])
-            #print(os.path.exists(audios[i]))
-            audios[i]=synchronize.load_audio(audios[i])
-            pass
-        else :
-            #print(os.path.exists(audios[i]))
-            audios[i]=synchronize.get_audio(audios[i])
-            pass
 
-    #delays=[1494.0/60, 1403.0/60, 1220.0/60, 1110.0/60]
+    for i,ano in enumerate(anomalis):
+        # si anomalie 'son' le fichier est un MP3 et pas un MP4, il faut donc load MP3 au lieu d'extraire le son de la video, deux fonctoin différentes
+        if ano=='son':
+            
+            audios[i]=synchronize.load_audio(audios[i])
+            
+        else :
+            
+            audios[i]=synchronize.get_audio(audios[i])
+            
+
+    #calcul du délays entre video, en seconde
     delays=synchronize.global_delay2(audios,fps=audio_fps)
-    #synchronize.delay_run_4(sources,delays,framestart=500)
-    #print(delays)
+
 
     cap1=cv2.VideoCapture(sources[0])
     cap2=cv2.VideoCapture(sources[1])
@@ -85,14 +104,16 @@ for index,row in df_config.iterrows():
     cap4=cv2.VideoCapture(sources[3])
 
     fps=cap1.get(cv2.CAP_PROP_FPS)
-        
+
+    #on fait commencer les videos à frame start + délai   
     cap1.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[0]+FRAME_START)
     cap2.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[1]+FRAME_START)
     cap3.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[2]+FRAME_START)
     cap4.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[3]+FRAME_START)
 
+    # calcul la fin d'expérience
     max_frame=min([cap1.get(cv2.CAP_PROP_FRAME_COUNT),cap2.get(cv2.CAP_PROP_FRAME_COUNT),cap3.get(cv2.CAP_PROP_FRAME_COUNT),cap4.get(cv2.CAP_PROP_FRAME_COUNT)])
-    print('end at ',max_frame)
+    #print('end at ',max_frame)
     
     
     ret1,frame1=cap1.read()
@@ -107,32 +128,15 @@ for index,row in df_config.iterrows():
     while(cap1.isOpened() and current_frame<max_frame) :
 
         current_frame=cap1.get(cv2.CAP_PROP_POS_FRAMES)
-        #print('a')
+       
         if ret and i%FRAME_RATE==0:
-            #frame1=np.copy(frame_rgb_1)
-            #frame2=np.copy(frame_rgb_2)
-            #frame3=np.copy(frame_rgb_3)
-            #frame4=np.copy(frame_rgb_4)
-            #cv2.imshow('ok',frame1)
-
-            #cv2.imwrite('image1.png',frame1)
-            #img1=Image.open('image1.png')
-
-            #cv2.imwrite('image2.png',frame2)
-            #img2=Image.open('image2.png')
-
-            #cv2.imwrite('image3.png',frame3)
-            #img3=Image.open('image3.png')
-
-            #cv2.imwrite('image4.png',frame4)
-            #img4=Image.open('image4.png')
-            #print(np.asarray(img))
-            
+           
+            #calcul prédictions
             score1=segmentation_yolo.score_frame(cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB),yolov7_Pose)
             score2=segmentation_yolo.score_frame(cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB),yolov7_Pose)
             score3=segmentation_yolo.score_frame(cv2.cvtColor(frame3, cv2.COLOR_BGR2RGB),yolov7_Pose)
             score4=segmentation_yolo.score_frame(cv2.cvtColor(frame4, cv2.COLOR_BGR2RGB),yolov7_Pose)
-            #print(frame_rgb.shape)
+            
             k=0
             conf1=conf2=conf3=conf4=0
             mask1=mask2=mask3=mask4=np.zeros((1000,1000))

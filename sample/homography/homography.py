@@ -104,6 +104,7 @@ def findHomography(source):
     
 
 def run(path_to_video,frame_start,H):
+    '''Lit une video et applique l'homography correspondante'''
     cap = cv.VideoCapture(path_to_video)
     current_frame=frame_start
     cap.set(cv.CAP_PROP_POS_FRAMES, frame_start)
@@ -130,10 +131,22 @@ def run(path_to_video,frame_start,H):
 
     cap.release()
     cv.destroyAllWindows()
+
 def save(H,title,dir):
+    '''enregistre l'homographie dans le dossier spécifié(format matrix numpy)'''
     np.save(os.path.join(dir,f'{title}.npy'),H)
     
 
 
-def get(PATH):
-    return np.load(PATH)
+def get(rat,exp,source,path,i):
+    '''
+    - load l'homography si elle st trouver dans le dossier data/rat/exp/homographhy/homo{i}.npy
+    - si pas trouvée : calcul une nouvelle correspondance de point'''
+    path=os.path.join(path,rat,exp,'homographhy','homo1.npy')
+    if os.path.exists(path):
+
+        return np.load(path)
+    else :
+        H=findHomography(source)
+        save(H,f"homo{i}.npy",os.path.join(path,rat,exp,'homographhy'))
+        return 
