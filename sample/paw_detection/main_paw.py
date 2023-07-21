@@ -1,14 +1,9 @@
 import os 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
-import numpy as np
-import cv2
-from tqdm import tqdm
+
 import time as t
 
 
-from IPython.display import display
-import pandas as pd
-from PIL import Image
 import sys 
 sys.path.insert(1,"sample")
 from paw_detection import paw_yolo

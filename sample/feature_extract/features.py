@@ -4,7 +4,6 @@ import numpy as np
 
 from tqdm import tqdm
 import tensorflow as tf
-import csv
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as ptc

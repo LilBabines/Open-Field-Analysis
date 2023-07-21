@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as ptc
-import matplotlib as mpl
+
 from matplotlib import cm
 import numpy as np
 import math
@@ -11,7 +11,7 @@ from matplotlib.colors import LogNorm
 import seaborn as sns
 import matplotlib.patches as mpatches
 sys.path.insert(1,"sample")
-from coord_precessing import distance,speed,turn
+from coord_precessing import distance,turn
 
 OUTPUT_PATH=os.path.join('E:','Stage_Tremplin','TRAJECTORy','resultat')
 OUTPUT_PATH_PAW=os.path.join('E:','Stage_Tremplin','PAW','resultat')

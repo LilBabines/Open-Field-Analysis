@@ -1,8 +1,8 @@
 import cv2
 import moviepy.editor as mpy
-import numpy 
+
 import cupy as np
-import matplotlib.pyplot as plt
+
 
 def delay_run(source1,source2,delay,frame_start):
     cap1 = cv2.VideoCapture(source1)
@@ -140,7 +140,7 @@ def load_audio(source):
     
     return  ad
 def get_audio(source):
-    '''récupère l'audio depuis un fichier video (mp4)'''
+    '''récupère l'audio depuis un fichier video (mp3)'''
     ad=  mpy.VideoFileClip(source).audio.to_soundarray()[0:40000000,0]
     
     return  ad
