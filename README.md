@@ -5,7 +5,7 @@
 <div align="center">
 </div>
 
-# Intelligence Artificielle pour l’Analyse de Comportement Animal
+# Vision Artificielle pour l’Analyse de Comportement Animal
 
 ## Projet de Stage :
 
