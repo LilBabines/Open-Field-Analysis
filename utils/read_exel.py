@@ -6,7 +6,7 @@ import os
 def get_path():
     '''renvoie la config
     emplacement  : ./config.xlsx'''
-    path=os.path.join(os.getcwd(),"config.xlsx")
+    path=os.path.join(os.getcwd(),"./cfg/config.xlsx")
     #print(path)
     assert os.path.exists(path)
     #print('Load', path)
@@ -84,7 +84,9 @@ def verif_video(df,dirdata=os.path.join(os.getcwd(),'data')):
     return paths
 
 def get_info(row,dir):
+
     try :
-        return get_video_path(row,dir),row['exp'],row['rat'],row['rat']+row['exp']
-    except:
         return get_video_path(row,dir),row['exp'].values[0],row['rat'].values[0],row['rat'].values[0]+row['exp'].values[0]
+       
+    except:
+        return get_video_path(row,dir),row['exp'],row['rat'],row['rat']+row['exp']

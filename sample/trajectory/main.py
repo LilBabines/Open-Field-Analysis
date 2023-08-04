@@ -35,8 +35,7 @@ def test():
     #vérifie si tout les video du fichier config sont trouvées
     read_exel.verif_video(df_config)
 
-    #chargement du model, YOLO
-    yolov5_pose = segmentation_yolo.load_model(MODEL_PATH)
+    
 
     #pour toutes les ligne du fichier config
 
@@ -50,16 +49,6 @@ def test():
     
     #on récupère le nom des video (sources), l'expérieince (exp), et le rat (rat)
     sources,exp,rat,title=read_exel.get_info(row,DATA_PATH)
-
-    #dossier où l'on range les trajectoires
-    current_path=os.path.join(SAVE_PATH,rat,exp)
-
-    if not(os.path.exists(current_path)):
-        os.makedirs(current_path)
-
-    #création d'un dossier coordinates{i}, pour i tout les calcul d'une même expérience (ou si deux prélésion d'un même rat par exmeple)
-    #SAVE_DIR=os.path.join(current_path,'coordinates'+str(len(os.listdir(current_path))))
-    #os.makedirs(SAVE_DIR)
 
     #on instancie le dataframe de sorti
     data_frame=pd.DataFrame(columns=('x','y','label','num','cam_confidence','mask_score','score1','score2','score3','score4'))
@@ -81,6 +70,10 @@ def test():
     anomalis=read_exel.get_anomalie(row)
 
     print(rat,exp)
+
+
+    #chargement du model, YOLO
+    yolov5_pose = segmentation_yolo.load_model(MODEL_PATH)
 
     #on récupère le fps du son
 
@@ -439,14 +432,14 @@ def hihi():
 def parse_opt():
     parser = argparse.ArgumentParser()
     #parser.add_argument('--source', type=str, help='.MP4 or .avi path file ',required=True)
-    parser.add_argument('--mode', type=str, default='test', help='mode : pour essayer l algo sur la première expérience avec affichage, "run" pour calculer toute les expérience présente dans le DATA_CONFIG  ')
+    parser.add_argument('--mode', type=str, default='test', help='mode : pour essayer l algo sur la première expérience avec affichage, "run" pour calculer toute les expérience présente dans le DATA_CONFIG  ',required=True)
     opt = parser.parse_args()
     return opt
 
 if __name__ == '__main__':
     opt = parse_opt()
     
-    with open('trajectory_run_cfg.yaml', 'r') as file :
+    with open('./cfg/trajectory_run_cfg.yaml', 'r') as file :
 
         dict_cfg = yaml.safe_load(file)
 
