@@ -34,10 +34,7 @@ FRAME_START=5000
 read_exel.verif_video(df_config)
 
 #chargement du model, YOLO
-yolo_weights_path=os.path.join(os.getcwd(),'model','poids','bestPose_Yv7.pt')#,','Utilisateur''auguste.verdier','Desktop','Rat_Tracker','model','yolov5'
-yolo_repo=os.path.join(os.getcwd(),'model','yoloEncore','YOLOv7')
-
-yolov7_Pose = segmentation_yolo.load_model(yolo_repo,yolo_weights_path)
+yolov5_pose = segmentation_yolo.load_model()
 
 #pour toutes les ligne du fichier config
 for index,row in df_config.iterrows():
@@ -53,6 +50,9 @@ for index,row in df_config.iterrows():
     #dossier où l'on range les trajectoires
     SAVE_PATH=os.path.join('E:','Stage_Tremplin','TRAJECTORy','resultat',rat,exp)
 
+    if not(os.path.exists(SAVE_PATH)):
+        os.makedirs(SAVE_PATH)
+
     #création d'un dossier coordinates{i}, pour i tout les calcul d'une même expérience (ou si deux prélésion d'un même rat par exmeple)
     SAVE_DIR=os.path.join(SAVE_PATH,'coordinates'+str(len(os.listdir(SAVE_PATH))))
     os.makedirs(SAVE_DIR)
@@ -61,10 +61,10 @@ for index,row in df_config.iterrows():
     data_frame=pd.DataFrame(columns=('x','y','label','num','cam_confidence','mask_score','score1','score2','score3','score4'))
 
     # on charge homographie
-    H1=homography.get(rat,exp,sources[0],DATA_PATH,0)
-    H2=homography.get(rat,exp,sources[1],DATA_PATH,1)
-    H3=homography.get(rat,exp,sources[2],DATA_PATH,2)
-    H4=homography.get(rat,exp,sources[3],DATA_PATH,3)
+    H1=homography.get(rat,exp,sources[0],DATA_PATH,1)
+    H2=homography.get(rat,exp,sources[1],DATA_PATH,2)
+    H3=homography.get(rat,exp,sources[2],DATA_PATH,3)
+    H4=homography.get(rat,exp,sources[3],DATA_PATH,4)
 
     #recupère le temps de fin de l'open field (juste avant arrivé de la vitre)
     #time=read_exel.get_time(row)
@@ -79,6 +79,8 @@ for index,row in df_config.iterrows():
     print(rat,exp)
 
     #on récupère le fps du son
+
+    print( '. . . . Synchronization . . . .')
     audio_fps=synchronize.get_fps(sources[3])
 
     for i,ano in enumerate(anomalis):
@@ -130,10 +132,10 @@ for index,row in df_config.iterrows():
         if ret and i%FRAME_RATE==0:
            
             #calcul prédictions
-            score1=segmentation_yolo.score_frame(cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB),yolov7_Pose)
-            score2=segmentation_yolo.score_frame(cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB),yolov7_Pose)
-            score3=segmentation_yolo.score_frame(cv2.cvtColor(frame3, cv2.COLOR_BGR2RGB),yolov7_Pose)
-            score4=segmentation_yolo.score_frame(cv2.cvtColor(frame4, cv2.COLOR_BGR2RGB),yolov7_Pose)
+            score1=segmentation_yolo.score_frame(cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB),yolov5_pose)
+            score2=segmentation_yolo.score_frame(cv2.cvtColor(frame2, cv2.COLOR_BGR2RGB),yolov5_pose)
+            score3=segmentation_yolo.score_frame(cv2.cvtColor(frame3, cv2.COLOR_BGR2RGB),yolov5_pose)
+            score4=segmentation_yolo.score_frame(cv2.cvtColor(frame4, cv2.COLOR_BGR2RGB),yolov5_pose)
             
             k=0
             conf1=conf2=conf3=conf4=0

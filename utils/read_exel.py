@@ -9,9 +9,9 @@ def get_path():
     path=os.path.join(os.getcwd(),"config.xlsx")
     print(path)
     assert os.path.exists(path)
-    #print(os.path.exists(path))
     print('Load', path)
     return path
+
 def get_video_format(video_name):
     L=video_name.split('.')
     if len(L)==1:
@@ -23,12 +23,9 @@ def get_video_path(row,dir_data):
     path=[]
     videos=[get_video_format(row['video1']),get_video_format(row['video2']),get_video_format(row['video3']),get_video_format(row['video4'])]
     for i,video in enumerate(videos):
-        #print(i,row['rat'],row['exp'])
-        #print(dir_data,row['rat'],row['exp'],'GOPRO '+str(i+1),video)
-        video_path=os.path.join(dir_data,row['rat'],row['exp'],'GOPRO '+str(i+1),video)
-        #print(video_path)
+        video_path=os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video)
         assert os.path.exists(video_path) 
-        path.append(os.path.join(dir_data,row['rat'],row['exp'],'GOPRO '+str(i+1),video))
+        path.append(os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video))
     return path
 
 def get_df():
@@ -40,20 +37,17 @@ def audios(row,dir_data):
     anomalies=get_anomalie(row)
     
     for i,an in enumerate(anomalies):
-        #print(an)
         if an =='son':
-            L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO {i+1}',row[f'video{i+1}'].split('.')[0]+".mp3")
-            #print(L[i])
+            L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO{i+1}',row[f'video{i+1}'].split('.')[0]+".mp3")
             assert os.path.exists(L[i])
         else :
-            L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO {i+1}',row[f'video{i+1}']+".MP4")
+            L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO{i+1}',row[f'video{i+1}']+".MP4")
     return L
+
 def get_anomalie(row):
-    #print(row['exp'],row['rat'])
     return row['anomalies'].split(',')
 
 def get_time(row):
-    
     if row['end_frame']:
         return (row['end_frame'])*60
     else :
@@ -64,7 +58,6 @@ def get_time(row):
 def verif_video(df,dirdata=os.path.join(os.getcwd(),'data')):
     paths=[]
     for index, row in df.iterrows():
-
         paths.append(get_video_path(row,dirdata))
     return paths
 

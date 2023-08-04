@@ -10,7 +10,7 @@ def load_model(source_pt=os.path.join(os.getcwd(),'model','poids','LAST_LAST_LAS
     - Prédit la position du rat
     - Classifie sa posture : normal ou en redressement '''
 
-    dirYolo=os.path.join(os.getcwd(),'model','paw','yolov5')
+    dirYolo=os.path.join(os.getcwd(),'model','yolov5')
     model = torch.hub.load(dirYolo, 'custom', path=source_pt, source='local')
     return model
   
@@ -59,7 +59,7 @@ def plot_boxes(results, frame):
         else :
             c=[255,0,0]
             conf=-cord[4]
-        c=[255,0,0]
+        
         x1, y1, x2, y2 = int(cord[0]*x_shape), int(cord[1]*y_shape), int(cord[2]*x_shape), int(cord[3]*y_shape)
         cv2.rectangle(frame, (x1, y1), (x2, y2), c, 2) 
     return frame,conf
