@@ -6,22 +6,27 @@ import sys
 sys.path.insert(1,"sample")
 from smoother import w_e_smoother
 
-def miss_pts(source):
+def miss_pts(source,frame_rate_analysis=2):
+    '''regarde à l'aide des frames, combien de point manque à l'appel '''
     dataframe=load_cvs(source)
     t=np.array(dataframe['num'].values)
     cpt=0
     for i in range(len(t)-1):
-        cpt+=((t[i+1]-t[i])//5 )   -1
+        cpt+=((t[i+1]-t[i])//frame_rate_analysis )   -1
     print(f"{cpt} points manquants sur {len(t)} points acquis, soit {round(cpt/(len(t)+cpt) *100,2)} % des points")
     return cpt
+
 def load_cvs(source):
+    '''recupère un fichier csv comprenant des result de la trajectoire'''
     return pd.read_csv(source)
 
 def dist(x1,x2,y1,y2):
+    '''calcule la distance euclidienne entre deux point'''
     return np.linalg.norm(np.array([x1,y1])-np.array([x2,y2]))
 
 def speed(x,y,t,padding,smooth=1,l=100,d=1):
-    '''smooth = 1 : smooth on x and y before cumpte speed
+    '''Calcule la vitesse en fonctoin du temps, padding correspond à lécart entre les point permettant de calculer la vitesse  
+    smooth = 1 : smooth on x and y before cumpte speed
     smooth = 0 : no smooth
     smooth = 2 : smooth on speed 
     smooth= 3 : smmoth on x,y and speed'''

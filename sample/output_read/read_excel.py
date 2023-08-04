@@ -10,11 +10,12 @@ import sys
 from matplotlib.colors import LogNorm
 import seaborn as sns
 import matplotlib.patches as mpatches
+
 sys.path.insert(1,"sample")
 from coord_precessing import distance,turn
 
 OUTPUT_PATH=os.path.join('E:','Stage_Tremplin','TRAJECTORy','resultat')
-OUTPUT_PATH_PAW=os.path.join('E:','Stage_Tremplin','PAW','resultat')
+OUTPUT_PATH_PAW=os.path.join('E:','Stage_Tremplin','PAW','resultat2')
 
 def get_path():
     path=os.path.join(OUTPUT_PATH,"config.xlsx")
@@ -141,6 +142,7 @@ def get_csv_of(rat,exp,num=0,clean=True):
 def get_csv_paw(rat,exp,num=0,clean=True):
     #print(rat,exp,'bug')
     #fin = end_OF(rat,exp,num=num)
+    print(OUTPUT_PATH_PAW)
     dataframe=pd.read_csv(os.path.join(OUTPUT_PATH_PAW,rat,exp,"coordinates"+str(num),'coord.csv'))
 
     
@@ -184,13 +186,13 @@ def group_rat_paw():
             
             if exp in os.listdir(os.path.join(OUTPUT_PATH_PAW,rat)):
 
-                print(rat,exp)
+                
 
                 SAVE_PATH=os.path.join(OUTPUT_PATH_PAW,rat,exp)
 
                 for name in os.listdir(SAVE_PATH):
                     #dataframe=get_csv(rat,exp,num=i)
-                    
+                    print(rat,exp,name)
                     i=int(name[-1])
 
                     dataframe=get_csv_paw(rat,exp,num=i)
