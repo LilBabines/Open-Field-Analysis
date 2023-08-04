@@ -7,12 +7,13 @@ def get_path():
     '''renvoie la config
     emplacement  : ./config.xlsx'''
     path=os.path.join(os.getcwd(),"config.xlsx")
-    print(path)
+    #print(path)
     assert os.path.exists(path)
-    print('Load', path)
+    #print('Load', path)
     return path
 
 def get_video_format(video_name):
+    #print(video_name)
     L=video_name.split('.')
     if len(L)==1:
         return video_name+'.MP4'
@@ -21,31 +22,52 @@ def get_video_format(video_name):
 
 def get_video_path(row,dir_data):
     path=[]
-    videos=[get_video_format(row['video1']),get_video_format(row['video2']),get_video_format(row['video3']),get_video_format(row['video4'])]
-    for i,video in enumerate(videos):
-        video_path=os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video)
-        assert os.path.exists(video_path) 
-        path.append(os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video))
+    try :
+
+        videos=[get_video_format(row['video1'].values[0]),get_video_format(row['video2'].values[0]),get_video_format(row['video3'].values[0]),get_video_format(row['video4'].values[0])]
+        for i,video in enumerate(videos):
+            video_path=os.path.join(dir_data,row['rat'].values[0],row['exp'].values[0],'GOPRO'+str(i+1),video)
+            assert os.path.exists(video_path) 
+            path.append(os.path.join(dir_data,row['rat'].values[0],row['exp'].values[0],'GOPRO'+str(i+1),video))
+    except :
+        videos=[get_video_format(row['video1']),get_video_format(row['video2']),get_video_format(row['video3']),get_video_format(row['video4'])]
+        for i,video in enumerate(videos):
+            video_path=os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video)
+            assert os.path.exists(video_path) 
+            path.append(os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video))
     return path
 
-def get_df():
+def get_df(cfg):
 
-    return pd.read_excel(get_path(),sheet_name='config')
+    path=os.path.join(cfg)
+    return pd.read_excel(path,sheet_name='config')
 
 def audios(row,dir_data):
     L=[None,None,None,None]
     anomalies=get_anomalie(row)
-    
-    for i,an in enumerate(anomalies):
-        if an =='son':
-            L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO{i+1}',row[f'video{i+1}'].split('.')[0]+".mp3")
-            assert os.path.exists(L[i])
-        else :
-            L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO{i+1}',row[f'video{i+1}']+".MP4")
+    try :
+
+        for i,an in enumerate(anomalies):
+            if an =='son':
+                L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO{i+1}',row[f'video{i+1}'].split('.')[0]+".mp3")
+                assert os.path.exists(L[i])
+            else :
+                L[i]=os.path.join(dir_data,row['rat'],row['exp'],f'GOPRO{i+1}',row[f'video{i+1}']+".MP4")
+    except :
+        for i,an in enumerate(anomalies):
+            if an =='son':
+                L[i]=os.path.join(dir_data,row['rat'].values[0],row['exp'].values[0],f'GOPRO{i+1}',row[f'video{i+1}'].values[0].split('.')[0]+".mp3")
+                assert os.path.exists(L[i])
+            else :
+                L[i]=os.path.join(dir_data,row['rat'].values[0],row['exp'].values[0],f'GOPRO{i+1}',row[f'video{i+1}'].values[0]+".MP4")
     return L
 
 def get_anomalie(row):
-    return row['anomalies'].split(',')
+    try :
+
+        return row['anomalies'].split(',')
+    except :
+        return row['anomalies'].values[0].split(',')
 
 def get_time(row):
     if row['end_frame']:
@@ -62,4 +84,7 @@ def verif_video(df,dirdata=os.path.join(os.getcwd(),'data')):
     return paths
 
 def get_info(row,dir):
-    return get_video_path(row,dir),row['exp'],row['rat'],row['rat']+row['exp']
+    try :
+        return get_video_path(row,dir),row['exp'],row['rat'],row['rat']+row['exp']
+    except:
+        return get_video_path(row,dir),row['exp'].values[0],row['rat'].values[0],row['rat'].values[0]+row['exp'].values[0]

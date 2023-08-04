@@ -68,14 +68,11 @@ def test(source,weights=None,frame_start=5000,frame_rate=3):
     '''test le fonctionnement du modèel sur un video
     - :param source: chemin de la video que va être analysée
     - :param frame_start: début de traitement'''
-    print(source)
 
-    print(os.path.exists(source))
-
-    #assert  (f'vidéo introuvale, chemin spécifié : {source}')
+    assert  os.path.exists(source), f'vidéo introuvale, chemin spécifié : {source}'
 
     if weights :
-        assert os.path.exists(weights) (f'poids du modèle YOLOv5 est introuvable, chemin spécifié : {weights}')
+        assert os.path.exists(weights), f'poids du modèle YOLOv5 est introuvable, chemin spécifié : {weights}'
         yolo_model=load_model(weights)
 
     else :
