@@ -13,6 +13,8 @@
 
 **Lieu du Stage** : [INSER - ToNIC](https://tonic.inserm.fr/)
 
+**Auteur** : Auguste Verdier
+
 **Tutuer** : [Thomas Pellegrini](https://www.irit.fr/~Thomas.Pellegrini/)
 
 **Encadrants** : [Isabelle Loubinoux](https://tonic.inserm.fr/equipes/isabelle-loubinoux/), [Julien Clauzel](https://tonic.inserm.fr/equipes/julien-clauzel/), [Adrien Brilhault](https://tonic.inserm.fr/equipes/adrien-brilhault/)
