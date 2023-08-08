@@ -425,8 +425,6 @@ def run():
     end = t.time()
     print('Temps de calcul : ',end - start)
 
-def hihi():
-    print(read_exel.get_df(cfg=DATA_CONFIG))
 
 
 def parse_opt():
