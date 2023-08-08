@@ -24,3 +24,37 @@
 **Keyword** : Open-field, Object Detection, Action Recognition, YOLO, multi-views, paw dection
 
 
+## Set Up :
+### Requirment : 
+- Install [Python](https://www.python.org/downloads/)
+- Install [Anaconda](https://docs.anaconda.com/free/anaconda/install/windows/) 
+- Set Up Cuda/cuDNN (c'est mieux mais pas obligatoire) 
+
+### Anaconda promt :
+
+1. git clone https://github.com/LilBabines/Open-Field-Analysis.git
+
+2. cd Open-Field-Analysis/
+
+3. conda create --name OPENFIELD  
+
+4. conda activate OPENFIELD
+
+5. pip install -r ./requirements.txt
+
+6. cd ./model  
+
+7. git clone https://github.com/ultralytics/yolov5  # clone yolov5 repository
+
+8. cd yolov5
+
+9.  pip install -r requirements.txt 
+
+L'environnement est normalement bien instalé.
+Testons le : 
+
+
+
+
+
+

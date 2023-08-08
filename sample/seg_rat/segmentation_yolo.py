@@ -91,6 +91,7 @@ def test(source,weights=None,frame_start=5000,frame_rate=3):
     if not cap.isOpened():
         print("Error opening video")
 
+
     while(cap.isOpened()):
 
 
@@ -123,6 +124,35 @@ def test(source,weights=None,frame_start=5000,frame_rate=3):
     cap.release()
     cv2.destroyAllWindows()
 
+    i=0
+    
+    if not cap.isOpened():
+        print("Error opening video")
+
+    status, frame = cap.read()
+    while(status):
+        
+        status, frame = cap.read()
+        if status:
+            frame=cv2.rotate(frame,cv2.ROTATE_90_COUNTERCLOCKWISE)
+            #frame=cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
+            #frame=cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
+            #frame=cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
+            #print(frame.shape)
+            #frame=cv2.rotate(frame,cv2.ROTATE_180)
+            #frame=cv2.flip(frame,1)
+            cv2.imshow('frame', frame)
+            
+            output.write(frame)
+            current_frame+=1
+        key = cv2.waitKey(1)
+        if key == ord('a'):
+            print(current_frame)
+            break
+
+    cap.release()
+    output.release()
+    cv2.destroyAllWindows()
 
 def parse_opt():
     parser = argparse.ArgumentParser()
