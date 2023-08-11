@@ -14,7 +14,7 @@ def load_cvs(source):
 
     return pd.read_csv(source)
 
-def get_slow_fast(x:np.Array,y,t,l=100,d=1,seuil=40,windows=1):
+def get_slow_fast(x,y,t,l=100,d=1,seuil=40,windows=1):
     '''Cette fonction retourne, les coordonnée où le rat est considérer à l'arrêt (x_slow,y_slow) et les moment oû le rat est en mmouvemnt (x_fast,y_fast), de plus revois la vitesse moyenne de chaque  course (mean_speed_run)
         - x, y : coordonnées du rat
         - t : frame 

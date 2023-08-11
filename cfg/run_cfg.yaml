@@ -2,7 +2,9 @@ SAVE_PATH_TRAJECTORY : "E:/OpenField/trajectory/"
 SAVE_PATH_PAW : "E:/OpenField/appui/"
 DATA_PATH : "./data/"
 DATA_CONFIG : "./cfg/config.xlsx"
-
+ANALYSE_PATH : "./analyse/"
 MODEL_PATH : "./model/poids/LAST_LAST_LAST.pt"
-
+SIDE_LESION: 
+ P1B: 'L' 
+ P1D: 'R' 
 FRAME_RATE : 1

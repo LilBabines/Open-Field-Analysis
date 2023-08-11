@@ -2,7 +2,8 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as ptc
-
+import argparse
+import yaml
 from matplotlib import cm
 import numpy as np
 import math
@@ -13,9 +14,10 @@ import matplotlib.patches as mpatches
 
 sys.path.insert(1,"sample")
 from coord_precessing import distance,turn
+from smoother import w_e_smoother
+sys.path.insert(1,"utils")
+import read_exel
 
-OUTPUT_PATH=os.path.join('E:','Stage_Tremplin','TRAJECTORy','resultat')
-OUTPUT_PATH_PAW=os.path.join('E:','Stage_Tremplin','PAW','resultat2')
 
 def get_path():
     path=os.path.join(OUTPUT_PATH,"config.xlsx")
@@ -24,10 +26,6 @@ def get_path():
     #print(os.path.exists(path))
     #print('Load', path)
     return path
-
-def get_config():
-
-    return pd.read_excel(get_path(),sheet_name='config')
 
 def plot_HM_rat_1(rat,bin=100):
     f,axes=plt.subplots(2,2,num=rat+' - '+'Heat map',figsize=(13,13))#
@@ -240,18 +238,15 @@ def get_label(dataframe):
     return np.array(dataframe['label'].values)
 
 def end_OF(rat,exp,num=0):
-    conf=get_config()
+    conf=read_exel.get_df(cfg=DATA_CONFIG)
     #print(conf)
+    #print(rat,exp)
     rows=conf.loc[(conf['rat']==rat) & (conf['exp']==exp) ]
     #print(rows)
-    #print(rows['end_time'].values[0])
     if math.isnan(rows['end_frame'].values[num]):
         time=rows['end_time'].values[num]
-        #print( 'fin',(time.minute+time.hour*60 )  *60)
         return (time.minute+time.hour*60 )  *60
-        
     else :
-        #print( 'fin',rows['end_frame'].values[num])
         return rows['end_frame'].values[num]
 
 def diff(rat):
@@ -431,8 +426,8 @@ def global_tab():
     total_tab=pd.DataFrame(columns=('rat','exp','ele_count','ele_time','ele_norm','distance','number_run','speed_run','total_frame','miss_pts','miss_cam','time_bord','time_center'))
     #print(os.listdir(OUTPUT_PATH)[1:],type(os.listdir(OUTPUT_PATH)))
 
-    print(os.listdir(OUTPUT_PATH)[1:])
-    for rat in os.listdir(OUTPUT_PATH)[1:]:
+    
+    for rat in os.listdir(OUTPUT_PATH):
         for exp in ['pre_lesion','1_semaine_postL','3_semaine_postL']:
             
 
@@ -446,16 +441,16 @@ def global_tab():
                 for i,name in enumerate(os.listdir(SAVE_PATH)):
                     dataframe=get_csv(rat,exp,num=i)
                     deb=start(dataframe)
-                    print(i)
+                    
                     dataframe=get_csv_of(rat,exp,num=i)
                     cpt,_=miss_pts(dataframe)
                     cpt_cam,_=miss_cam(dataframe)
                     totalF=time_video(dataframe)
-                    print(totalF)
+                    
                     x,label=smooth_elevation(dataframe,13)
                     x,label2=smooth_elevation(dataframe,17)
                     x,label3=smooth_elevation(dataframe,21)
-                    print(cpt_cam)
+                    
                     cpt1=cpt1+np.array(cpt_cam)
                     count1,count2,count3=count(x,label),count(x,label2),count(x,label3)
                     time_ele=elevation_time(x,label)
@@ -468,9 +463,8 @@ def global_tab():
                     
                     x_slow,y_slow,x_fast,y_fast,mean_run_spe=turn.get_slow_fast(dataframe['x'].values,dataframe['y'].values,dataframe['num'].values,seuil=35,windows=1)
                     
-                    total_tab.loc[len(total_tab)]={'rat':rat,'exp':exp,'ele_count':np.mean([len(count1),len(count2),len(count3)])/(totalF/60**2),'ele_time':100*np.mean([time_ele,time_ele2,time_ele3])/totalF,'distance':60*dist/totalF,'number_run':len(mean_run_spe)/(totalF/60**2),'speed_run':np.mean(mean_run_spe),'total_frame':totalF,'ele_norm':np.mean([np.mean(count1),np.mean(count2),np.mean(count3)])/60,'time_bord':100*t_bord/(totalF/60),'time_center':100*t_center/(totalF/60),'miss_pts':cpt,'miss_cam':cpt_cam}
-    print(cpt1)            
-    total_tab.to_csv('resultats10.csv')   
+                    total_tab.loc[len(total_tab)]={'rat':rat,'exp':exp,'ele_count':np.mean([len(count1),len(count2),len(count3)])/(totalF/60**2),'ele_time':100*np.mean([time_ele,time_ele2,time_ele3])/totalF,'distance':60*dist/totalF,'number_run':len(mean_run_spe)/(totalF/60**2),'speed_run':np.mean(mean_run_spe),'total_frame':totalF,'ele_norm':np.mean([np.mean(count1),np.mean(count2),np.mean(count3)])/60,'time_bord':100*t_bord/(totalF/60),'time_center':100*t_center/(totalF/60),'miss_pts':cpt,'miss_cam':cpt_cam}         
+    total_tab.to_csv(os.path.join(ANALYSE_PATH,'resultats10.csv'))   
 
 def plot_elevation(dataframe,rat,exp):
     
@@ -901,27 +895,416 @@ def plot_rat_indiv(num=6):
         plot_rat_stat(rat_stat(rat))
     plt.show()
 
+def paw_count(dataframe):
+    yes_left=0
+    yes_right=0
+    no_left=0
+    no_right=0
+    L1=dataframe['label_L1'].values
+    L2=dataframe['label_L2'].values
+    L3=dataframe['label_L3'].values
+    L4=dataframe['label_L4'].values
+    R1=dataframe['label_R1'].values
+    R2=dataframe['label_R2'].values
+    R3=dataframe['label_R3'].values
+    R4=dataframe['label_R4'].values
+    condL=np.array(     [ [float(j) if j not in ['None',' None'] else 0 for j in np.array(i[1:-1].split(","),dtype=object)] for i in dataframe['cam_left_confidence'].values] ,dtype=object)
+    condR=np.array(     [ [float(j) if j not in ['None',' None'] else 0 for j in np.array(i[1:-1].split(","),dtype=object)] for i in dataframe['cam_right_confidence'].values] ,dtype=object)
+    for i in range(len(L1)):
+        labL=0
+        labR=0
+        L=[L1[i],L2[i],L3[i],L4[i]]
+        R=[R1[i],R2[i],R3[i],R4[i]]
 
-#plot_elevation(get_csv('P2B','pre_lesion'),'P2B','pre_lesion')
+        for x in range(4):
+            if L[x]==0:
+                labL-=condL[i][x]
+            elif L[x]==1:
+                labL+=condL[i][x]
+            if R[x]==0:
+                labR-=condR[i][x]
+            elif R[x]==1:
+                labR+=condR[i][x]
+        if labL>0:
+            yes_left+=1
+        elif labL<0 :
+            no_left+=1
 
-#print(miss_pts(get_csv('P1D','3_semaine_postL')))
-#global_tab()
-#plot_HM_rat_2('P1R')
+        if labR>0:
+            yes_right+=1
+        elif labR<0 :
+            no_right+=1
+    return yes_left,no_left,yes_right,no_right
+
+def paw(dataframe):
+
+    L1=dataframe['label_L1'].values
+    L2=dataframe['label_L2'].values
+    L3=dataframe['label_L3'].values
+    L4=dataframe['label_L4'].values
+    R1=dataframe['label_R1'].values
+    R2=dataframe['label_R2'].values
+    R3=dataframe['label_R3'].values
+    R4=dataframe['label_R4'].values
+
+    condL=np.array(     [ [float(j) if j not in ['None',' None'] else 0 for j in np.array(i[1:-1].split(","),dtype=object)] for i in dataframe['cam_left_confidence'].values] ,dtype=object)
+    condR=np.array(     [ [float(j) if j not in ['None',' None'] else 0 for j in np.array(i[1:-1].split(","),dtype=object)] for i in dataframe['cam_right_confidence'].values] ,dtype=object)
+
+    outL=[]
+    outR=[]
+    confL=[]
+    confR=[]
+    for i in range(len(L1)):
+        labL=0
+        labR=0
+        L=[L1[i],L2[i],L3[i],L4[i]]
+        R=[R1[i],R2[i],R3[i],R4[i]]
+
+        for x in range(4):
+            if L[x]==0:
+                labL-=condL[i][x]
+            elif L[x]==1:
+                labL+=condL[i][x]
+            if R[x]==0:
+                labR-=condR[i][x]
+            elif R[x]==1:
+                labR+=condR[i][x]
+        confL.append(abs(labL))
+        confR.append(abs(labR))
+        if labL>0:
+            outL.append(1)
+        
+        elif labL<0 :
+            outL.append(0)
+        else :
+            outL.append(-1)
+        if labR>0:
+            outR.append(1)
+        elif labR<0 :
+            outR.append(0)
+        else : 
+            outR.append(-1)
+    return outL,outR,np.mean(confL),np.mean(confR)
+
+def paw_appui_dico(rat,exp,side_lesion,num=0,K=8)  :  
+    data=get_csv_paw(rat,exp,num=num)
+    L,R=paw_count_ele(data)
+    N=len(L)
+    OUT={'rat':rat,'exp':exp,'N':N,"double":0,"only_L":0,'only_R':0,'NO':0,'L_r':0,'R_l':0,'L':0,'R':0,"only_lese":0,'only_ok':0,'lese_ok':0,'ok_lese':0,'lese':0,'ok':0,'score':0}
+    for deb,fin in zip(L,R):
+        #print(data['num'].values[deb])
+
+        frameL,frameR,confL,confR=paw_gauche_droite(data,int(deb),int(fin),K=K)
+        #print(confL,confR)
+        id=np.argmin([frameL,frameR])
+        if side_lesion==['L','R'][id]:
+            id_lesion=0
+        else :
+            id_lesion=1
+        if np.isfinite(frameL +frameR):
+            if np.abs(frameL-frameR)>10:
+                #print(['L_r','R_l'][np.argmin([frameL,frameR])])
+                OUT[['L_r','R_l'][id]]+=1
+                OUT[['L','R'][id]]+=1
+                OUT[['lese_ok','ok_lese'][id_lesion]]+=1
+                OUT[['lese','ok'][id_lesion]]+=1
+
+            else :
+                OUT['double']+=1
+                #print('double')
+        elif np.isfinite(min(frameL ,frameR)):
+
+            OUT[['only_L','only_R'][id]]+=1
+            OUT[['only_lese','only_ok'][id_lesion]]+=1
+
+            OUT[['L','R'][id]]+=1
+            OUT[['lese','ok'][id_lesion]]+=1
+           #print(['only_L','only_R'][np.argmin([frameL,frameR])])
+        else :
+
+            OUT['NO']+=1
+            #print('no')
+        #print( ' ' )
+    #,"","",'','','','','','',"",'','','','',''
+    
+    OUT['double_norm']=OUT['double']/N
+    OUT['only_L_norm']=OUT['only_L']/N
+    OUT['only_R_norm']=OUT['only_R']/N
+    OUT['NO_norm']=OUT['NO']/N
+    OUT['L_r_norm']=OUT['L_r']/N
+    OUT['R_l_norm']=OUT['R_l']/N
+    OUT['L_norm']=OUT['L']/N
+    OUT['R_norm']=OUT['R']/N
+    OUT['only_lese_norm']=OUT['only_lese']/N
+    OUT['only_ok_norm']=OUT['only_ok']/N
+    OUT['lese_ok_norm']=OUT['lese_ok']/N
+    OUT['ok_lese_norm']=OUT['ok_lese']/N
+    OUT['lese_norm']=OUT['lese']/N
+    OUT['ok_norm']=OUT['ok']/N 
+    OUT['score_ninaaaaaa']=((OUT['lese']-OUT['ok'])/(OUT['lese']+OUT['ok']))*100
+    OUT['score_ninaaaaaa_only']=((OUT['only_lese']-OUT['only_ok'])/(OUT['only_lese']+OUT['only_ok']))*100
+    OUT['score']=((OUT['lese']+0.5*OUT['double'] ) /(OUT['lese']+OUT['double']+OUT['ok']))   
+    #print(OUT)
+    return OUT
+
+def paw_gauche_droite(dataframe,debut_elevation,fin_elevation,K):
+    D=debut_elevation-10 if debut_elevation>10 else 0
+    F=fin_elevation +10 if fin_elevation<len(dataframe['num'].values) else len(dataframe['num'].values)-1
+    #print(D,F,'D,F')
+    T=dataframe['num'].values
+
+    outL,outR,confL,confR=paw(dataframe.iloc[D:F, :])
+    
+    #print(outR)
 
 
-#plot_rat_indiv()
-#plot_rat_stat(rat_stat('P1N'))
-#end_OF('P1B','3_semaine_postL')
-#plot_stat1(get_stat(num=6))
-#plot_stat(get_stat(num=2))
-#plt.show()
-#config=get_config()
-#plot_HM(get_csv_of('P1D','pre_lesion'))
-#plt.show()
-#fig1,fig2,ax1,ax2=plot_stat2(get_stat(num=6,shamm=False))
-#add_shamm(fig1,fig2,ax1,ax2)
-#plot_bord_time()
-#data=group_rat_paw()
-#plot_distrib_bord()
-#plt.show()
-#print(data.sample(10))
+    #print(len(outL),'len outL')
+    #print('R',outR)
+    #print('L',outL)
+    T=T[D:F]
+    L_start=-1
+    R_start=-1
+
+    ret=-1
+    
+    timeL=np.inf
+    timeR=np.inf
+
+    cpt_L=0
+    cpt_R=0
+
+    labL=outL[0]
+    labR=outR[0]
+
+    for i,(L,R) in enumerate(zip(outL,outR)):
+        if L==1 and labL!=1:
+            L_start=T[i]
+            cpt_L+=1
+            labL=1
+
+        if L==1 and labL==1:
+            cpt_L+=1
+            if cpt_L>K and timeL==np.inf:
+                timeL=L_start
+
+        if L==0 and labL==1:
+            labL=0
+            if cpt_L>=K and timeL==np.inf:
+                timeL=L_start
+                
+            cpt_L=0
+        if L==0 and labL!=1:
+            labL=0
+        
+        
+        if L==-1 and labL!=1:
+            labL=-1
+
+
+
+        if R==1 and labR!=1:
+            R_start=T[i]
+            cpt_R+=1
+            labR=1
+
+        if R==1 and labR==1:
+            cpt_R+=1
+            if cpt_R>K and timeR==np.inf:
+                timeR=R_start
+
+
+        if R==0 and labR==1:
+            labR=0
+            if cpt_R>=K and timeR==np.inf:
+                timeR=R_start
+                
+            cpt_R=0
+        if R==0 and labR!=1:
+            labR=0
+        
+        
+        if R==-1 and labR!=1:
+            labR=-1
+        if timeL!=np.inf and timeR!=np.inf :
+            #print(timeL,timeR,'break')
+            break
+            
+    #print(timeL,timeR) 
+    return timeL,timeR,confL,confR
+
+def paw_count_ele(dataframe):
+
+    label=paw_ele(dataframe)
+    #smooth_y=w_e_smoother.whittaker_smooth(y,lmbd=100,d=1)
+    #label=np.where(smooth_y>1.8,1,0)
+
+    
+    t=dataframe['num'].values
+
+    c=0
+    flag=0
+
+
+    fin=[]
+    debut=[]
+    cpt=0
+    for i in range(1,len(label)):
+        if label[i]==flag:
+            cpt+=t[i]-t[i-1]
+        else :
+            if flag==1 or flag=='elevation':
+                #lab.append(t[i])
+                fin.append(i)
+            else :
+                #okok.append(t[i])
+                debut.append(i)
+            flag=label[i]
+            cpt=0
+    if len(fin)==len(debut)-1:
+        fin.append(t[-1])
+    return debut,fin
+
+def paw_ele(dataframe, smooth=True):
+
+    lab_conf=np.array(  np.array([np.array(i[1:-1].split(","),dtype=object).astype(float) for i in dataframe['cam_pose_confidence'].values] ,dtype=object) )
+    lab=np.array(     [ [float(j) if j not in ['None',' None'] else -1 for j in np.array(i[1:-1].split(","),dtype=object)] for i in dataframe['cam_pose'].values] ,dtype=object)
+
+    lab_return=[]
+    #print(len( dataframe['cam_pose_confidence'].values),len(dataframe['cam_pose'].values))
+    for i in range(len(lab)):
+        o=0
+
+        for j,l in enumerate(lab[i]):
+            o+=(l==0) *-1 *lab_conf[i][j] + (l==1)*1**lab_conf[i][j]
+        if o>0:
+            lab_return.append(o)
+        else :
+            lab_return.append(o)
+    if smooth :
+
+        lab_return=w_e_smoother.whittaker_smooth(np.array(lab_return),lmbd=100,d=1)
+        lab_return=np.where(lab_return>1.8,4,0)  
+        lab_return=w_e_smoother.whittaker_smooth(lab_return,lmbd=20,d=1)
+        lab_return=np.where(lab_return>2,1,0)
+    else :
+        lab_return=np.array(lab_return)
+    return  lab_return
+
+def run_trajectoire():
+    cpt1=np.array([0,0,0,0])
+    total_tab=pd.DataFrame(columns=('rat','exp','ele_count','ele_time','ele_norm','distance','number_run','speed_run','total_frame','miss_pts','miss_cam','time_bord','time_center'))
+    #print(os.listdir(OUTPUT_PATH)[1:],type(os.listdir(OUTPUT_PATH)))
+
+    
+    for rat in os.listdir(OUTPUT_PATH):
+        for exp in ['pre_lesion','1_semaine_postL','3_semaine_postL']:
+            
+
+            if exp in os.listdir(os.path.join(OUTPUT_PATH,rat)):
+
+
+            
+                print(rat,exp)
+                SAVE_PATH=os.path.join(OUTPUT_PATH,rat,exp)
+
+                for i,name in enumerate(os.listdir(SAVE_PATH)):
+                    #dataframe=get_csv(rat,exp,num=i)
+                    #deb=start(dataframe)
+                    
+                    dataframe=get_csv_of(rat,exp,num=i)
+                    cpt,_=miss_pts(dataframe)
+                    cpt_cam,_=miss_cam(dataframe)
+                    totalF=time_video(dataframe)
+                    
+                    x,label=smooth_elevation(dataframe,13)
+                    x,label2=smooth_elevation(dataframe,17)
+                    x,label3=smooth_elevation(dataframe,21)
+                    
+                    cpt1=cpt1+np.array(cpt_cam)
+                    count1,count2,count3=count(x,label),count(x,label2),count(x,label3)
+                    time_ele=elevation_time(x,label)
+
+                    time_ele2=elevation_time(x,label2)
+                    time_ele3=elevation_time(x,label3)
+
+                    dist=distance.distance(dataframe)
+                    t_bord,t_center=time_bord(dataframe['x'].values,dataframe['y'].values,dataframe['num'].values)
+                    
+                    x_slow,y_slow,x_fast,y_fast,mean_run_spe=turn.get_slow_fast(dataframe['x'].values,dataframe['y'].values,dataframe['num'].values,seuil=35,windows=1)
+                    
+                    total_tab.loc[len(total_tab)]={'rat':rat,'exp':exp,'ele_count':np.mean([len(count1),len(count2),len(count3)])/(totalF/60**2),'ele_time':100*np.mean([time_ele,time_ele2,time_ele3])/totalF,'distance':60*dist/totalF,'number_run':len(mean_run_spe)/(totalF/60**2),'speed_run':np.mean(mean_run_spe),'total_frame':totalF,'ele_norm':np.mean([np.mean(count1),np.mean(count2),np.mean(count3)])/60,'time_bord':100*t_bord/(totalF/60),'time_center':100*t_center/(totalF/60),'miss_pts':cpt,'miss_cam':cpt_cam}         
+    total_tab.to_csv(os.path.join(ANALYSE_PATH,f"trajectory_result{len(os.listdir(ANALYSE_PATH))}.csv"))
+
+def run_appui():
+    
+    lesion={'P1B':'L','P2B':'R','P1D':'L','P2D':'R','P1N':'L','P2N':'R','P1R':'L','P2R':'L','P1V':'L','P2V':'R'}
+    total_tab=pd.DataFrame(columns=('rat','exp','N',"double","only_L",'only_R','NO','L_r','R_l','L','R',"double_norm","only_L_norm",'only_R_norm','NO_norm','L_r_norm','R_l_norm','L_norm','R_norm',"only_lese",'only_ok','lese_ok','ok_lese','lese','ok',"only_lese_norm",'only_ok_norm','lese_ok_norm','ok_lese_norm','lese_norm','ok_norm','score_ninaaaaaa','score_ninaaaaaa_only'))
+    #print(os.listdir(OUTPUT_PATH)[1:],type(os.listdir(OUTPUT_PATH)))
+
+    print(os.listdir(OUTPUT_PATH_PAW))
+    for rat in os.listdir(OUTPUT_PATH_PAW):
+        for exp in ['pre_lesion','1_semaine_postL','3_semaine_postL']:
+            
+
+            if exp in os.listdir(os.path.join(OUTPUT_PATH_PAW,rat)):
+
+
+            
+                print(rat,exp)
+                SAVE_PATH=os.path.join(OUTPUT_PATH_PAW,rat,exp)
+
+                for i,name in enumerate(os.listdir(SAVE_PATH)):
+                    print(name)
+                    dico=paw_appui_dico(rat,exp,lesion[rat],num=i,K=9)
+                    data=pd.DataFrame(dico, index=[0])
+                    print(dico['N'])
+                    total_tab=pd.concat([total_tab.loc[:],data]).reset_index(drop=True)
+    total_tab.to_csv(os.path.join(ANALYSE_PATH,f"paw_result{len(os.listdir(ANALYSE_PATH))}.csv")) 
+    return total_tab 
+
+
+def parse_opt():
+    parser = argparse.ArgumentParser()
+    #parser.add_argument('--source', type=str, help='.MP4 or .avi path file ',required=True)
+    parser.add_argument('--mode', type=str, default='test', help='--mode "trajectoire" pour analyser les cvs sorti par chaque rat : , "appui" pour les cvs appui  ',required=True)
+    opt = parser.parse_args()
+    return opt
+
+if __name__ == '__main__':
+    opt = parse_opt()
+    
+    with open('./cfg/run_cfg.yaml', 'r') as file :
+
+        dict_cfg = yaml.safe_load(file)
+
+        LESION_SIDE=dict_cfg['SIDE_LESION']
+
+        ANALYSE_PATH=dict_cfg['ANALYSE_PATH']
+        if not(os.path.exists(ANALYSE_PATH)):
+            print("WARNING : dossier analyse pas trouvé, dossier créé, emplacement : {ANALYSE_PATH}")
+            os.makedirs(ANALYSE_PATH)
+
+        OUTPUT_PATH_PAW=dict_cfg['SAVE_PATH_PAW']
+        assert os.path.exists(OUTPUT_PATH_PAW), f"dossier résultat appui {OUTPUT_PATH_PAW} pas trouvé"
+
+        OUTPUT_PATH=dict_cfg['SAVE_PATH_TRAJECTORY']
+        assert os.path.exists(OUTPUT_PATH), f"dossier résultat trajectoire {OUTPUT_PATH} pas trouvé"
+        
+        DATA_PATH = dict_cfg['DATA_PATH']
+
+        assert os.path.exists(dict_cfg['DATA_PATH']), f" DATA dir doesn't exist, at {DATA_PATH} !! check documentary for set up the projet's hierachy"
+
+        DATA_CONFIG = dict_cfg['DATA_CONFIG']
+        assert os.path.exists(dict_cfg['DATA_CONFIG']) ,f" DATA configuration doesn't exist at {DATA_CONFIG} !! check documentary for set up the projet's hierachy"
+
+        FRAME_RATE=dict_cfg['FRAME_RATE']
+
+        MODEL_PATH=dict_cfg['MODEL_PATH']
+        assert os.path.exists(dict_cfg['MODEL_PATH']) ,f" MODEL weights path doesn't exist at {MODEL_PATH} !! check documentary for set up the projet's hierachy"
+
+        #print(set(LESION_SIDE.keys()),set(os.listdir(OUTPUT_PATH_PAW)))
+        assert set(LESION_SIDE.keys())==set(os.listdir(OUTPUT_PATH_PAW)) ,f"Les coté de lésion ne corespondent pas au rat précent dans le dossier {OUTPUT_PATH_PAW}"
+    if opt.mode =='trajectoire':
+        run_trajectoire()
+    elif opt.mode=='appui':
+        run_appui()
