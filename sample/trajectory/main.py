@@ -438,7 +438,7 @@ def parse_opt():
     return opt
 
 if __name__ == '__main__':
-    #opt = parse_opt()
+    opt = parse_opt()
     
     with open('./cfg/run_cfg.yaml', 'r') as file :
 
@@ -461,10 +461,10 @@ if __name__ == '__main__':
         MODEL_PATH=dict_cfg['MODEL_PATH']
         assert os.path.exists(dict_cfg['MODEL_PATH']) ,f" MODEL weights path doesn't exist at {MODEL_PATH} !! check documentary for set up the projet's hierachy"
 
-   # if opt.mode =='test':
-    #    test()
-    #elif opt.mode=='run':
-       # run()
+    if opt.mode =='test':
+        test()
+    elif opt.mode=='run':
+        run()
     test()
 
 
