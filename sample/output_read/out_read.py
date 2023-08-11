@@ -18,6 +18,37 @@ from smoother import w_e_smoother
 sys.path.insert(1,"utils")
 import read_exel
 
+with open('./cfg/run_cfg.yaml', 'r') as file :
+
+    dict_cfg = yaml.safe_load(file)
+
+    LESION_SIDE=dict_cfg['SIDE_LESION']
+
+    ANALYSE_PATH=dict_cfg['ANALYSE_PATH']
+    if not(os.path.exists(ANALYSE_PATH)):
+        print("WARNING : dossier analyse pas trouvé, dossier créé, emplacement : {ANALYSE_PATH}")
+        os.makedirs(ANALYSE_PATH)
+
+    OUTPUT_PATH_PAW=dict_cfg['SAVE_PATH_PAW']
+    assert os.path.exists(OUTPUT_PATH_PAW), f"dossier résultat appui {OUTPUT_PATH_PAW} pas trouvé"
+
+    OUTPUT_PATH=dict_cfg['SAVE_PATH_TRAJECTORY']
+    assert os.path.exists(OUTPUT_PATH), f"dossier résultat trajectoire {OUTPUT_PATH} pas trouvé"
+    
+    DATA_PATH = dict_cfg['DATA_PATH']
+
+    assert os.path.exists(dict_cfg['DATA_PATH']), f" DATA dir doesn't exist, at {DATA_PATH} !! check documentary for set up the projet's hierachy"
+
+    DATA_CONFIG = dict_cfg['DATA_CONFIG']
+    assert os.path.exists(dict_cfg['DATA_CONFIG']) ,f" DATA configuration doesn't exist at {DATA_CONFIG} !! check documentary for set up the projet's hierachy"
+
+    FRAME_RATE=dict_cfg['FRAME_RATE']
+
+    MODEL_PATH=dict_cfg['MODEL_PATH']
+    assert os.path.exists(dict_cfg['MODEL_PATH']) ,f" MODEL weights path doesn't exist at {MODEL_PATH} !! check documentary for set up the projet's hierachy"
+
+    #print(set(LESION_SIDE.keys()),set(os.listdir(OUTPUT_PATH_PAW)))
+    assert set(LESION_SIDE.keys())==set(os.listdir(OUTPUT_PATH_PAW)) ,f"Les coté de lésion ne corespondent pas au rat précent dans le dossier {OUTPUT_PATH_PAW}"
 
 def get_path():
     path=os.path.join(OUTPUT_PATH,"config.xlsx")
@@ -238,7 +269,11 @@ def get_label(dataframe):
     return np.array(dataframe['label'].values)
 
 def end_OF(rat,exp,num=0):
+    
+
     conf=read_exel.get_df(cfg=DATA_CONFIG)
+  
+        
     #print(conf)
     #print(rat,exp)
     rows=conf.loc[(conf['rat']==rat) & (conf['exp']==exp) ]
