@@ -40,7 +40,7 @@ def plot_boxes_track(results, frame):
     :param frame: Frame which has been scored.
     :return: Frame with bounding boxes and labels ploted on it.
     """
-    cord,label = results
+    cord,label,_ = results
     
     x_shape, y_shape = frame.shape[1], frame.shape[0]
     if cord :
@@ -63,7 +63,7 @@ def plot_boxes_track(results, frame):
 
 def load_model(mode='paw'):
 
-    dirYolo=os.path.join(os.getcwd(),'model','paw','yolov5')
+    dirYolo=os.path.join(os.getcwd(),'model','yolov5')
 
     if mode =='paw':
 
@@ -134,32 +134,23 @@ def plot_boxes(results, frame):
     :param frame: Frame which has been scored.
     :return: Frame with bounding boxes and labels ploted on it.
     """
-    cord,label = results
+    cord,label,_ = results
     #print(label)
     x_shape, y_shape = frame.shape[1], frame.shape[0]
     #if cord :
         
     #print(label)
-    if label=='left_yes':
-        print("ah")
+    if label==1:
+        #print("ah")
         #print('n',label)
         c=[0,0,255]
         #conf=cord[4]
-    elif label=='right_yes' :
-        print("aoh")
+    elif label==0 :
+        #print("aoh")
         c=[255,0,0]
         #print('e',label)
         ##conf=-cord[4]
-    elif label=='left_no':
-        print("ooh")
-        c=[0,100,100]
-    elif label=='right_no':
-        print("oooh")
-        c=[100,100,0]
-    elif label=='elevation' :
-        c=[150,20,180]
-    elif label=='normal':
-        c=[100,100,100]
+
 
     x1, y1, x2, y2 = int(cord[0]*x_shape), int(cord[1]*y_shape), int(cord[2]*x_shape), int(cord[3]*y_shape)
     #bgr = (0, 255, 0)
@@ -168,7 +159,7 @@ def plot_boxes(results, frame):
         
     return frame#,conf
 
-def test(path_to_video,frame_start,cpt,frame_rate_analysis=4):
+def test(path_to_video,frame_start,frame_rate_analysis=4):
     Paw_detctoin=load_model(mode='paw')
     Track_model=load_model(mode='pose')
 
@@ -188,30 +179,28 @@ def test(path_to_video,frame_start,cpt,frame_rate_analysis=4):
         frame=np.copy(frame_rgb)
         
         if status and i%frame_rate_analysis==0:
-            #cv2.imshow('ok',frame_rgb)
+            
             cv2.imwrite('image.png',frame_rgb)
 
             img=Image.open('image.png')
-            #print(np.asarray(img))
+           
             result=score_frame_track(img,Track_model)
-            plot_boxes(result,frame_rgb)
-            if result[1]=='elevation':
+            plot_boxes_track(result,frame_rgb)
+            if result[1]==1: #élévation détectée
 
             
                 retL,retR,scoreL,scoreR=score_frame(img,Paw_detctoin)
-                print(retL,retR)
+                #print(retL,retR)
                 if retL:
-                    #print(score[0])
+                    
                     img=plot_boxes(scoreL,frame_rgb)
-                #else :
-                    #pass
-                    #print('no')
+                
                 if retR:
                     img=plot_boxes(scoreR,frame_rgb)
 
 
             cv2.imshow('yolo',frame_rgb)
-            print(cap.get(cv2.CAP_PROP_POS_FRAMES))
+            
             
         key = cv2.waitKey(1)
         
@@ -219,10 +208,7 @@ def test(path_to_video,frame_start,cpt,frame_rate_analysis=4):
         if key == ord('a'):
             
             break
-        if key ==ord('f'):
-            cv2.imwrite(f'frame{cpt}.png',frame)
-            cpt+=1
-            
+        
     cap.release()
     cv2.destroyAllWindows()
 

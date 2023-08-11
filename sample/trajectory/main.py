@@ -30,7 +30,7 @@ def test():
     #Calcule la trajectoire tout les FRAME_RATE frames
     
     #début d'analyse des video (frame de la camera 1)
-    FRAME_START=5000
+    FRAME_START=800
 
     #vérifie si tout les video du fichier config sont trouvées
     read_exel.verif_video(df_config)
@@ -76,14 +76,14 @@ def test():
     yolov5_pose = segmentation_yolo.load_model(MODEL_PATH)
 
     #on récupère le fps du son
-
+    
     print( '. . . . Synchronization . . . .')
     audio_fps=synchronize.get_fps(sources[3])
-
+    son=[1,1,1,1] #les videos rétournées commencent à la frame 800, pour passer les frame corrompues, donc on avance tout le monde de 800 (framestart) sauf les videos retournées qui sont repérées grace à : ano=='son'
     for i,ano in enumerate(anomalis):
         # si anomalie 'son' le fichier est un MP3 et pas un MP4, il faut donc load MP3 au lieu d'extraire le son de la video, deux fonctoin différentes
         if ano=='son':
-            
+            son[i]=0
             audios[i]=synchronize.load_audio(audios[i])
             
         else :
@@ -103,10 +103,10 @@ def test():
     fps=cap1.get(cv2.CAP_PROP_FPS)
 
     #on fait commencer les videos à frame start + délai   
-    cap1.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[0]+FRAME_START)
-    cap2.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[1]+FRAME_START)
-    cap3.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[2]+FRAME_START)
-    cap4.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[3]+FRAME_START)
+    cap1.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[0]+FRAME_START*son[0]-5)
+    cap2.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[1]+FRAME_START*son[1]-1)
+    cap3.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[2]+FRAME_START*son[2])
+    cap4.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[3]+FRAME_START*son[3])
 
     # calcul la fin d'expérience
     max_frame=min([cap1.get(cv2.CAP_PROP_FRAME_COUNT),cap2.get(cv2.CAP_PROP_FRAME_COUNT),cap3.get(cv2.CAP_PROP_FRAME_COUNT),cap4.get(cv2.CAP_PROP_FRAME_COUNT)])
@@ -281,14 +281,17 @@ def run():
         print(rat,exp)
 
         #on récupère le fps du son
-
+        
         print( '. . . . Synchronization . . . .')
         audio_fps=synchronize.get_fps(sources[3])
+
+
+        son=[1,1,1,1] #les videos rétournées commencent à la frame 800, pour passer les frame corrompues, donc on avance tout le monde de 800 (framestart) sauf les videos retournées qui sont repérées grace à : ano=='son'
 
         for i,ano in enumerate(anomalis):
             # si anomalie 'son' le fichier est un MP3 et pas un MP4, il faut donc load MP3 au lieu d'extraire le son de la video, deux fonctoin différentes
             if ano=='son':
-                
+                son[i]=0
                 audios[i]=synchronize.load_audio(audios[i])
                 
             else :
@@ -308,10 +311,10 @@ def run():
         fps=cap1.get(cv2.CAP_PROP_FPS)
 
         #on fait commencer les videos à frame start + délai   
-        cap1.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[0]+FRAME_START)
-        cap2.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[1]+FRAME_START)
-        cap3.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[2]+FRAME_START)
-        cap4.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[3]+FRAME_START)
+        cap1.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[0]+FRAME_START*son[0]-5)
+        cap2.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[1]+FRAME_START*son[0]-1)
+        cap3.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[2]+FRAME_START*son[0])
+        cap4.set(cv2.CAP_PROP_POS_FRAMES, fps*delays[3]+FRAME_START*son[0])
 
         # calcul la fin d'expérience
         max_frame=min([cap1.get(cv2.CAP_PROP_FRAME_COUNT),cap2.get(cv2.CAP_PROP_FRAME_COUNT),cap3.get(cv2.CAP_PROP_FRAME_COUNT),cap4.get(cv2.CAP_PROP_FRAME_COUNT)])
@@ -435,13 +438,13 @@ def parse_opt():
     return opt
 
 if __name__ == '__main__':
-    opt = parse_opt()
+    #opt = parse_opt()
     
-    with open('./cfg/trajectory_run_cfg.yaml', 'r') as file :
+    with open('./cfg/run_cfg.yaml', 'r') as file :
 
         dict_cfg = yaml.safe_load(file)
 
-        SAVE_PATH=dict_cfg['SAVE_PATH']
+        SAVE_PATH=dict_cfg['SAVE_PATH_TRAJECTORY']
         if not(os.path.exists(SAVE_PATH)):
             print(f"WARNING : save path doesn't not exist , new one created at {SAVE_PATH}")
             os.makedirs(SAVE_PATH)
@@ -457,9 +460,11 @@ if __name__ == '__main__':
 
         MODEL_PATH=dict_cfg['MODEL_PATH']
         assert os.path.exists(dict_cfg['MODEL_PATH']) ,f" MODEL weights path doesn't exist at {MODEL_PATH} !! check documentary for set up the projet's hierachy"
-    if opt.mode =='test':
-        test()
-    elif opt.mode=='run':
-        run()
+
+   # if opt.mode =='test':
+    #    test()
+    #elif opt.mode=='run':
+       # run()
+    test()
 
 

@@ -1,7 +1,0 @@
-SAVE_PATH : "E:/OpenField/resultat/"
-DATA_PATH : "./data/"
-DATA_CONFIG : "./cfg/config.xlsx"
-
-MODEL_PATH : "./model/poids/LAST_LAST_LAST.pt"
-
-FRAME_RATE : 2

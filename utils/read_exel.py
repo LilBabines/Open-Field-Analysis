@@ -21,20 +21,28 @@ def get_video_format(video_name):
         return video_name
 
 def get_video_path(row,dir_data):
+    #print()
     path=[]
     try :
 
         videos=[get_video_format(row['video1'].values[0]),get_video_format(row['video2'].values[0]),get_video_format(row['video3'].values[0]),get_video_format(row['video4'].values[0])]
         for i,video in enumerate(videos):
             video_path=os.path.join(dir_data,row['rat'].values[0],row['exp'].values[0],'GOPRO'+str(i+1),video)
-            assert os.path.exists(video_path) 
+            #print(video_path)
+            assert os.path.exists(video_path) , f"video {video_path} non trouvée !!"
             path.append(os.path.join(dir_data,row['rat'].values[0],row['exp'].values[0],'GOPRO'+str(i+1),video))
-    except :
+    except : 
+        pass
+
+    try :
         videos=[get_video_format(row['video1']),get_video_format(row['video2']),get_video_format(row['video3']),get_video_format(row['video4'])]
         for i,video in enumerate(videos):
             video_path=os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video)
-            assert os.path.exists(video_path) 
+            #print(video_path)
+            assert os.path.exists(video_path) , f"video {video_path} non trouvée !!"
             path.append(os.path.join(dir_data,row['rat'],row['exp'],'GOPRO'+str(i+1),video))
+    except :
+        pass
     return path
 
 def get_df(cfg):
