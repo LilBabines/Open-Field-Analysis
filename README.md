@@ -41,7 +41,7 @@
 
 3. >cd Open-Field-Analysis/
 
-4. >conda create --name OPENFIELD  
+4. >conda create --name OPENFIELD python=3.9 
 
 5. >conda activate OPENFIELD
 
