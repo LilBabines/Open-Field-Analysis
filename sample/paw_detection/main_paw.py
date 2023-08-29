@@ -124,8 +124,8 @@ if __name__ == '__main__':
 
         FRAME_RATE=dict_cfg['FRAME_RATE']
 
-        MODEL_PATH=dict_cfg['MODEL_PATH']
-        assert os.path.exists(dict_cfg['MODEL_PATH']) ,f" MODEL weights path doesn't exist at {MODEL_PATH} !! check documentary for set up the projet's hierachy"
+        #MODEL_PATH=dict_cfg['MODEL_PATH']
+        #assert os.path.exists(dict_cfg['MODEL_PATH']) ,f" MODEL weights path doesn't exist at {MODEL_PATH} !! check documentary for set up the projet's hierachy"
 
     if opt.mode =='test':
         test_yolo()
