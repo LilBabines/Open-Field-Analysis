@@ -28,32 +28,47 @@
 ### Requirment : 
 - Install [Python](https://www.python.org/downloads/)
 - Install [Anaconda](https://docs.anaconda.com/free/anaconda/install/windows/) 
-- Set Up Cuda/cuDNN (c'est mieux mais pas obligatoire) 
+- Set Up Cuda/cuDNN (c'est mieux mais pas obligatoire, je l'utilise pour la détection [PyToch] et pour la sychronisation [CuPy] (version cuda de numpy) ) (Donc si pas de GPU, remplacer Cupy par numpy, thats it normalement)
 
 ### Anaconda promt :
 
-1. git clone https://github.com/LilBabines/Open-Field-Analysis.git
 
-2. cd Open-Field-Analysis/
 
-3. conda create --name OPENFIELD  
+1.  placer vous à l'endroit ou le projet sera construit (commande "cd")
 
-4. conda activate OPENFIELD
+  
+2. >git clone https://github.com/LilBabines/Open-Field-Analysis.git
 
-5. pip install -r ./requirements.txt
+3. >cd Open-Field-Analysis/
 
-6. cd ./model  
+4. >conda create --name OPENFIELD  
 
-7. git clone https://github.com/ultralytics/yolov5  # clone yolov5 repository
+5. >conda activate OPENFIELD
 
-8. cd yolov5
+6. >pip install -r ./requirements.txt
 
-9.  pip install -r requirements.txt 
+7. >cd ./model  
+
+8. >git clone https://github.com/ultralytics/yolov5  # clone yolov5 repository
+
+9.  >cd yolov5
+
+10. >pip install -r requirements.txt 
+
 
 L'environnement est normalement bien instalé.
-Testons le : 
+Testons le :
 
-. . . . . . .
+1. placer une video dans le projet (à la racine si vous voulez)
+2. ouvrir Anaconda PowerShell Prompt
+3. >cd path_to_the_project/Open_Field_Analysis
+4. >python .\sample\seg_rat\segmentation_yolo.py --source video_path (./video1.MP4,   si video à la racine)
+   
+Le code se lance, charge le reseau de neurones, puis la détection du rat et des redressement ce fait directement sur l'image.
+Pour quitter les fenêtres de lecture de video : cliquer sur la video puis sur la touche **a** ou/et **echap**.
+
+Si vous avez une erreur de package style : *No module named 'module_name'*. C'est qu'il faut l'installer séparemment (il manque au requirement.txt). Trouver le package sur https://pypi.org/ (premier site google search souvent). Pour l'installer assurez vous d'être dans le bon environnment conda, celui créé plus tôt (*OPENFIELD* si pas changé). 
+
 
 ## Architecture à respecter :
 
@@ -61,11 +76,11 @@ Testons le :
 OpenField
 ├── sample (code source)
 ├── utils (code source annexe peu utile, à concaténer avec sample)
-├── model (dossier des poids yolov5)
+├── model (dossier des poids yolov5 et le répertoire de yolov5)
 ├── cfg (dossier des configurations)
     ├──config.xlsx (tableau qui répertarie les données)
     └──run_cfg.yaml (constante du projet, chemin de sorti, emplacement des poids, frame rate, etc.)
-├── analyse (dossier résultats, métriques et )
+├── analyse (dossier résultats, métriques et autre comptage )
 └── data (dossier des données : vidéo + homography)
     └──rat1
         └──exp1
@@ -79,8 +94,9 @@ OpenField
                 ├──...
                 └──homo4.npy
 ```
+Les fichiers sont très importants. Le fichier *config.xlsx* doit contenir toutes les information necessaires sur les données. Pour que les vidéos ne soient ni mélangées ni manquantes en autre. Chaque ligne corresponds à une expérience et doit contenire : nom rat, nom expéreience (correspondant aux dossier associé), nom des videos (sans .MP4), start_time (vaux zéro si pas spécifié), minute:seconde de l'arrivé de la vitre, anomalie des video : 'son' si le fichier audio est détaché.
 
-, chaque ligne corresponds à une expérience et doit contenire : nom rat, nom expéreience (correspondant aux dossier associé), nom des videos (sans .MP4), start_time (vaux zéro si pas spécifié), minute:seconde de l'arrivé de la vitre, anomalie des video : 'son' si le fichier audio est détaché)
+Le fichier *run_cfg.yaml*, contient les liens, les paramètre du projet, toutes les constances. Le nom des variables sont le plus explicite possible. *SAVE_PATH_TRAJECTORY* et *SAVE_PATH_PAW* sont les chemins ont seront enregistrer les sorties csv des algo de l'extraction de la trajectoire et de la détectoin d'appui. *DATA_PATH* le répertoire racine des donnés, il peut être placé en réalité (normalement) n'importe où, il suffit simplement bien le marquer sur le fichier .yaml, *DATA_CONFIG* emplacement de la configuratoin des données (peut changer en fonction des données qui veulent être traitées, ne mettre dans le tableau seulement les expériences qui veulent être analysées), *ANALYSE_PATH* répertoire où seront enregistrée les analyse des csv, *SIDE_LESION* répertorie la latéralité des membre handicapé par la lésoin pour chaque rat, *FRAME_RATE* intervalle frame de décsion (garder 1 le plus possible pour la détection d'appui notamment, si il vient à changé attention d'adapter les décisions).
 
 
 

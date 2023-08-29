@@ -99,9 +99,9 @@ def test(source,weights=None,frame_start=5000,frame_rate=3):
         status, frame_rgb = cap.read()
         if status and i%frame_rate==0:
             #cv2.imshow('ok',frame_rgb)
-            cv2.imwrite('image.png',frame_rgb)
+            
 
-            img=Image.open('image.png')
+            img=cv2.cvtColor(frame_rgb, cv2.COLOR_BGR2RGB)
             #print(np.asarray(img))
 
             score=score_frame(img,yolo_model)
