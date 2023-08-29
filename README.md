@@ -100,4 +100,25 @@ Le fichier *run_cfg.yaml*, contient les liens, les paramètre du projet, toutes 
 
 
 
+## Utilisation :
+
+terminal command (toujours se placer dans le répertoire OpenField pour terminal, sinon ajuster les chemin des fichiers) : 
+1. Test un modèle sur une video
+   
+    - >python .\sample\seg_rat\segmentation_yolo.py --source video_path
+    - >python .\sample\seg_rat\segmentation_yolo.py --source video_path --weights weights_path
+2. Pour traiter les vidéos
+   1. trajectoire :
+        - > python .\sample\trajectory\main.py --mode test/run
+    2. appui :
+        - >python .\sample\paw_detection\main_paw.py --mode run/test
+3. Analyse résultat
+   1. Trajectoire :
+       - >python .\sample\output_read\out_read.py --mode trajectoire/appui 
+
+Le répertoire YOLOv5 créé durant l'instalation permet de nombreuses choses (entrainement, détectoin, analyse, seuil, score F1 et autre) voir   https://github.com/ultralytics/yolov5. Notamment pour enregistrer une video de prédiction ou filtrer les prediction avec leurs scores de confiance, il faudrait utiliser le fichier .\model\yolov5\detect.py. Le fichier comporte des explicatoin d'utilisation au dbut. Conseil d'utilisatoin :
+- >python .\model\yolov5\detect.py --weights [path_weights] --source [vdieo_path]
+- > python .\model\yolov5\detect.py --weights .\model\poids\LAST_LAST_LAST.pt --source .\data\test_rat\test_exp\GOPRO1\****.MP4 
+
+- >python .\model\yolov5\detect.py --weights .\model\poids\best_1920.pt --source .\data\test_rat\test_exp\GOPRO1\****.MP4 --img-size 1920 --conf-thres 0.6 --line-thickness 5
 

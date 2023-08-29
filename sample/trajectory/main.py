@@ -428,7 +428,7 @@ def run():
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', type=str, default='test', help='mode : pour essayer l algo sur la première expérience avec affichage, "run" pour calculer toute les expérience présente dans le DATA_CONFIG  ',required=True)
+    parser.add_argument('--mode', type=str, default='test', help='mode :  "test" pour essayer l algo sur la première expérience avec affichage, "run" pour calculer toute les expérience présente dans le DATA_CONFIG  ',required=True)
     opt = parser.parse_args()
     return opt
 
