@@ -7,7 +7,7 @@
 
 # Vision Artificielle pour l’Analyse de Comportement Animal
 
-## Projet de Stage :
+## Projet de Stage (en développement):
 
 **Université** : [Toulouse - UT3 Paul Sabatier](https://www.univ-tlse3.fr/)
 
