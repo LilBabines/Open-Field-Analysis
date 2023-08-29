@@ -101,8 +101,9 @@ Le fichier *run_cfg.yaml*, contient les liens, les paramètre du projet, toutes 
 
 
 ## Utilisation :
+Dans un premier temps faire le fichier *confg.xlsx*.
 
-terminal command (toujours se placer dans le répertoire OpenField pour terminal, sinon ajuster les chemin des fichiers) : 
+Puis terminal command anaconda (toujours se placer dans le répertoire OpenField pour terminal, sinon ajuster les chemin des fichiers et être dans le bon environnement) : 
 1. Test un modèle sur une video
    
     - >python .\sample\seg_rat\segmentation_yolo.py --source video_path

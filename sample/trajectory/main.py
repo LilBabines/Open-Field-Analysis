@@ -460,6 +460,6 @@ if __name__ == '__main__':
         test()
     elif opt.mode=='run':
         run()
-    test()
+    
 
 
