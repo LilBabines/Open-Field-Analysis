@@ -144,7 +144,6 @@ def test(source,weights=None,frame_start=5000,frame_rate=3):
             #frame=cv2.flip(frame,1)
             cv2.imshow('frame', frame)
             
-            output.write(frame)
             current_frame+=1
         key = cv2.waitKey(1)
         if key == ord('a'):
@@ -152,7 +151,6 @@ def test(source,weights=None,frame_start=5000,frame_rate=3):
             break
 
     cap.release()
-    output.release()
     cv2.destroyAllWindows()
 
 def parse_opt():

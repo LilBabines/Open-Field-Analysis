@@ -1272,9 +1272,7 @@ def run_trajectoire():
 
 def run_appui():
     
-    lesion={'P1B':'L','P2B':'R','P1D':'L','P2D':'R','P1N':'L','P2N':'R','P1R':'L','P2R':'L','P1V':'L','P2V':'R'}
     total_tab=pd.DataFrame(columns=('rat','exp','N',"double","only_L",'only_R','NO','L_r','R_l','L','R',"double_norm","only_L_norm",'only_R_norm','NO_norm','L_r_norm','R_l_norm','L_norm','R_norm',"only_lese",'only_ok','lese_ok','ok_lese','lese','ok',"only_lese_norm",'only_ok_norm','lese_ok_norm','ok_lese_norm','lese_norm','ok_norm','score_ninaaaaaa','score_ninaaaaaa_only'))
-    #print(os.listdir(OUTPUT_PATH)[1:],type(os.listdir(OUTPUT_PATH)))
 
     print(os.listdir(OUTPUT_PATH_PAW))
     for rat in os.listdir(OUTPUT_PATH_PAW):
@@ -1290,7 +1288,7 @@ def run_appui():
 
                 for i,name in enumerate(os.listdir(SAVE_PATH)):
                     print(name)
-                    dico=paw_appui_dico(rat,exp,lesion[rat],num=i,K=9)
+                    dico=paw_appui_dico(rat,exp,LESION_SIDE[rat],num=i,K=9)
                     data=pd.DataFrame(dico, index=[0])
                     print(dico['N'])
                     total_tab=pd.concat([total_tab.loc[:],data]).reset_index(drop=True)
@@ -1343,3 +1341,5 @@ if __name__ == '__main__':
         run_trajectoire()
     elif opt.mode=='appui':
         run_appui()
+    else :
+        print("Wrong mode : trajectoire or appui, only accepted :)")
