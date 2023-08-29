@@ -346,30 +346,26 @@ def run():
                 conf1=conf2=conf3=conf4=0
                 mask1=mask2=mask3=mask4=np.zeros((1000,1000))
                 if score1[1]!=None:
-                    #print(score[0])
                     k+=1
-                    _,conf1=segmentation_yolo.plot_boxes(score1,frame1)
+                    _,conf1=score1[0][-1]
                     mask1=segmentation_yolo.mask(score1[0])
-                    #x1,y1,x2,y2=score[1][0:4]
+                    
                 if score2[1]!=None:
-                    #print(score[0])
                     k+=1
-                    _,conf2=segmentation_yolo.plot_boxes(score2,frame2)
+                    _,conf2=score2[0][-1]
                     mask2=segmentation_yolo.mask(score2[0])
-                    #x1,y1,x2,y2=score[1][0:4]
+                    
                 if score3[1]!=None:
                     k+=1
-                    #print(score[0])
-                    _,conf3=segmentation_yolo.plot_boxes(score3,frame3)
+                    _,conf3=score3[0][-1]
                     mask3=segmentation_yolo.mask(score3[0])
-                    #x1,y1,x2,y2=score[1][0:4]
+                    
                 if score4[1]!=None:
                     k+=1
-                    #print(score[0])
-                    _,conf4=segmentation_yolo.plot_boxes(score4,frame4)
+                    _,conf4=score4[0][-1]
                     mask4=segmentation_yolo.mask(score4[0])
-                    #x1,y1,x2,y2=score[1][0:4]
-                #print(conf1,conf2,conf3,conf4)
+                    
+                
                 if k>=2:
 
                     
@@ -394,7 +390,7 @@ def run():
                     #cv2.imshow('r',cv2.circle(np.zeros((1000,1000,3)),(round(y_center),round(x_center)),radius=5,thickness=5,color=[255,0,0]))
                     #cv2.imshow('hohoh',homo)
 
-                #,'label','num','cam_confidence','mask_score'
+                
                     data_frame.loc[len(data_frame)]={'x':x_center,'y':y_center,'label':lab,'num': current_frame,'cam_confidence':[conf1,conf2,conf3,conf4],'mask_score':mask_score,'score1':score1,'score2':score2,'score3':score3,'score4':score4}
                     #data_frame=pd.concat([data_frame,pd.DataFrame({'x':[x_center],'y':[y_center],'label':lab,'num': current_frame,'cam_confidence':[conf1,conf2,conf3,conf4],'mask_score':mask_score}) ]).reset_index(drop=True)
                     
@@ -432,7 +428,6 @@ def run():
 
 def parse_opt():
     parser = argparse.ArgumentParser()
-    #parser.add_argument('--source', type=str, help='.MP4 or .avi path file ',required=True)
     parser.add_argument('--mode', type=str, default='test', help='mode : pour essayer l algo sur la première expérience avec affichage, "run" pour calculer toute les expérience présente dans le DATA_CONFIG  ',required=True)
     opt = parser.parse_args()
     return opt

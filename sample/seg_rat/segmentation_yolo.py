@@ -30,6 +30,7 @@ def score_frame(frame,modelYolo):
         if row['confidence'] > cofidence :
             cord=[float(row['xmin']), float(row['ymin']),float(row['xmax']), float(row['ymax']),row['confidence']]
             label=row['name']
+            cofidence=row['confidence']
     
     return cord,label
 
